@@ -79,6 +79,7 @@ Options:
 
     --print prints the url rather than opening it
     --domain="http://custominstancedomain.com/"
+    --github-token Github token used to create gist
 
 Installation
 ------------

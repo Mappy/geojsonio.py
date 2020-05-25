@@ -61,7 +61,7 @@ def embed(contents='', width='100%', height=512, *args, **kwargs):
 
 
 def make_url(contents, domain=DEFAULT_DOMAIN, force_gist=False,
-             size_for_gist=MAX_URL_LEN):
+             size_for_gist=MAX_URL_LEN, github_token=None):
     """
     Returns the URL to open given the domain and contents.
 
@@ -90,7 +90,7 @@ def make_url(contents, domain=DEFAULT_DOMAIN, force_gist=False,
     if len(contents) <= size_for_gist and not force_gist:
         url = data_url(contents, domain)
     else:
-        gist = _make_gist(contents)
+        gist = _make_gist(contents, github_token=github_token)
         url = gist_url(gist.id, domain)
 
     return url
@@ -161,13 +161,17 @@ def data_url(contents, domain=DEFAULT_DOMAIN):
     return url
 
 
-def _make_gist(contents, description='', filename='data.geojson'):
+def _make_gist(contents, description='', filename='data.geojson',
+               github_token=None):
     """
-    Create and return an anonymous gist with a single file and specified
-    contents
+    Create and return a gist with a single file and specified
+    contents. Gist is created under the account related to the provided
+    github_token (cf https://github.com/settings/tokens)
 
     """
-    ghapi = github3.GitHub()
+    if github_token is None:
+        raise ValueError("Github token cannot be None")
+    ghapi = github3.login(token=github_token)
     files = {filename: {'content': contents}}
     gist = ghapi.create_gist(description, files)
 
@@ -202,6 +206,11 @@ def main():
                         default=DEFAULT_DOMAIN,
                         help='Alternate URL instead of http://geojson.io/')
 
+    parser.add_argument('-t', '--github-token',
+                        dest='github_token',
+                        default=None,
+                        help='Github token used to create gist')
+
     parser.add_argument('filename',
                         nargs='?',
                         type=argparse.FileType('r'),
@@ -211,7 +220,7 @@ def main():
     args = parser.parse_args()
 
     contents = args.filename.read()
-    url = make_url(contents, args.domain)
+    url = make_url(contents, args.domain, github_token=args.github_token)
     if args.do_print:
         print(url)
     else:
