@@ -128,7 +128,8 @@ def test_factory_gist(features):
         class Dummy(object):
             id = 'abc123'
         MockInstance.return_value = Dummy()
-        url = geojsonio.make_url(contents, size_for_gist=size-1)
+        url = geojsonio.make_url(contents, size_for_gist=size-1,
+                                 github_token='my_token')
 
     assert url == geojsonio.gist_url(Dummy.id)
 
@@ -142,6 +143,6 @@ def test_factory_force_gist(features):
             id = 'abc123'
         MockInstance.return_value = Dummy()
         url = geojsonio.make_url(contents, size_for_gist=size+1,
-                                 force_gist=True)
+                                 force_gist=True, github_token='my_token')
 
     assert url == geojsonio.gist_url(Dummy.id)
